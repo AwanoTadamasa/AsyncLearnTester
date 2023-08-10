@@ -4,16 +4,25 @@ internal class AsyncTest
 {
     public static void RUN()
     {
-        int r = 0;
-        var num = Task<int>.Run(() => SpinStick(r));
+        int spinStick = 0;
+        int i = 0;
+        var num = TimerByMilliSecond(100);
+        var obj = new object();
 
         while (true)
         {
-            if (num.IsCompletedSuccessfully)
+            if (num.Status == TaskStatus.RanToCompletion)
             {
-                num = Task<int>.Run(() => SpinStick(r + 1));
+                lock (obj)
+                {
+                    Console.Write("stick");
+                    spinStick = (spinStick + 1) % 4; 
+                    num = TimerByMilliSecond(100);
+                }
             }
-            Console.Write($"{stick[r]}\r");
+
+            i = (i + 1) % 1000;
+            Console.Write("{0,2}{1,4}\r", stick[spinStick], i);
         }
     }
 
@@ -24,10 +33,9 @@ internal class AsyncTest
         Console.WriteLine($"End Task{x}");
     }
 
-    private static async Task<int> SpinStick(int i)
+    private static async Task TimerByMilliSecond(int i)
     {
-        await Task.Delay(50);
-        return i++ % 4;
+        await Task.Delay(i);
     }
 
     private static readonly Dictionary<int, string> stick = new()
