@@ -3,7 +3,8 @@ using ConsoleApp1;
 
 Console.WriteLine("Hello, World!");
 
-AsyncTest.RUN();
+var test = new AsyncTest();
+test.Run1();
 
 Console.WriteLine($"End Main\r\n");
 //Console.ReadLine();

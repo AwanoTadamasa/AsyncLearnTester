@@ -1,50 +1,62 @@
-﻿namespace ConsoleApp1;
+﻿using System.Diagnostics;
+
+namespace ConsoleApp1;
 
 internal class AsyncTest
 {
-    public static void RUN()
+    private static readonly Dictionary<int, string> Sticks = new()
     {
-        int spinStick = 0;
-        int i = 0;
-        var num = TimerByMilliSecond(100);
-        var obj = new object();
+        { 0, @"｜" },
+        { 1, @"／" },
+        { 2, @"ー" },
+        { 3, @"＼" }
+    };
 
+    private static int IncrementStick(int i)
+    {
+        var index = i % 4;
+        var stick = Sticks[index];
+
+        i = (i + 1) % 1000;
+        Console.CursorLeft = 0;
+        Console.Write($"Stick: {stick} {i:D4}");
+
+        return i;
+    }
+
+    /// <summary>
+    /// シーケンシャル実行。
+    /// </summary>
+    public void Run0()
+    {
+        var i = 0;
         while (true)
         {
-            if (num.Status == TaskStatus.RanToCompletion)
-            {
-                lock (obj)
-                {
-                    Console.Write("stick");
-                    spinStick = (spinStick + 1) % 4; 
-                    num = TimerByMilliSecond(100);
-                }
-            }
-
-            i = (i + 1) % 1000;
-            Console.Write("{0,2}{1,4}\r", stick[spinStick], i);
+            i = IncrementStick(i);
         }
     }
 
-    private static async Task SomeTask(int x)
+    /// <summary>
+    /// ディレイ(重い処理)だけ分ける。
+    /// </summary>
+    public void Run1()
     {
-        Console.WriteLine($"Start Task{x}");
-        await Task.Delay(1000 * x);
-        Console.WriteLine($"End Task{x}");
+        var i = 0;
+        var task = Task.Delay(100);
+
+        while (true)
+        {
+            if (task.Status == TaskStatus.RanToCompletion)
+            {
+                Console.WriteLine(" finish!");
+                // ここでは待たないで処理される
+                task = Task.Delay(100);
+            }
+
+            i = IncrementStick(i);
+        }
     }
 
-    private static async Task TimerByMilliSecond(int i)
-    {
-        await Task.Delay(i);
-    }
-
-    private static readonly Dictionary<int, string> stick = new()
-    {
-        {0,@"｜" },
-        {1,@"／" },
-        {2,@"ー" },
-        {3,@"＼" }
-    };
     //Task*()
     //Console.WriteLine("TUGI");
 
